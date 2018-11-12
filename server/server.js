@@ -7,7 +7,7 @@ const express = require('express');
 const socketIO = require('socket.io');
 
 const port = process.env.PORT || 3000;
-const publicPath = path.join(__dirname, '../public', );
+const publicPath = path.join(__dirname, '../public');
 // console.log(publicPath);
 // Returns: D:\Documents\nodejs-udemy-andrew\node-chat-app\public
 var app = express();
@@ -19,9 +19,22 @@ var io = socketIO(server);
 
 app.use(express.static(publicPath));
 
-// the 'socket' argument is similar to 'socket' in index.html but it represents the individual socoket as opposed to all the users connected to server
+// the 'socket' argument is similar to 'socket' in index.html but it represents the individual socket as opposed to all the users connected to server
 io.on('connection', (socket) => {
   console.log('New user connected');
+
+  // 'emit' takes 1st arg as name of event being emitted, and 2nd arg is options for that named event.
+  // Custom Event Emitter
+  socket.emit('newMessage', {
+    from: 'Andrew',
+    text: 'Hey, can you meet up at 6?',
+    createdAt: new Date().toString()
+  });
+
+  // Custom Event Listener
+  socket.on('createMessage', (message) => {
+    console.log('createMessage', message);
+  });
 
   socket.on('disconnect', () => {
     console.log('User has disconnected');
