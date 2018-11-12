@@ -23,17 +23,17 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => {
   console.log('New user connected');
 
-  // 'emit' takes 1st arg as name of event being emitted, and 2nd arg is options for that named event.
-  // Custom Event Emitter
-  socket.emit('newMessage', {
-    from: 'Andrew',
-    text: 'Hey, can you meet up at 6?',
-    createdAt: new Date().toString()
-  });
-
   // Custom Event Listener
   socket.on('createMessage', (message) => {
     console.log('createMessage', message);
+    // Custom Event Emitter
+    // 'emit' takes 1st arg as name of event being emitted, and 2nd arg is options for that named event.
+    // while 'socket.emit' emits an event to a single connection, 'io.emit' emits event to every single connection
+    io.emit('newMessage', {
+      from: message.from,
+      text: message.text,
+      createdAt: new Date().getTime()
+    });
   });
 
   socket.on('disconnect', () => {
