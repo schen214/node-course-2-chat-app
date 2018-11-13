@@ -27,15 +27,20 @@ io.on('connection', (socket) => {
 
   socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
 
+  // Emits to everyone but that 'socket'
   socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
 
   // Custom Event Listener
-  socket.on('createMessage', (message) => {
+  // Adding 'callback' as 2nd arg to arrow function will allow us to use 'callback()'. Thus, callback in index.js will fire 'acknowledging' the emitted event
+  socket.on('createMessage', (message, callback) => {
     console.log('createMessage', message);
+
     // Custom Event Emitter
     // 'emit' takes 1st arg as name of event being emitted, and 2nd arg is options for that named event.
-    // while 'socket.emit' emits an event to a single connection, 'io.emit' emits event to every single connection
+    // while 'socket.emit' emits an event to a single connection, 'io.emit' emits event to everyone connected
     io.emit('newMessage', generateMessage(message.from, message.text));
+    // can add argument to 'callback()' (can be any data type) which can then be used in client's callback, 'data'.
+    callback('this is from the server.');
 
     // 'socket.broadcast.emit' will emit the 'newMessage' event to everyone except to this 'socket' (The 'socket' is the one who calls 'emit')
     // socket.broadcast.emit('newMessage', {
