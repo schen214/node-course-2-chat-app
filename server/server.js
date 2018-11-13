@@ -6,10 +6,12 @@ const http = require('http');
 const express = require('express');
 const socketIO = require('socket.io');
 
+const {generateMessage} = require('./utils/message');
 const port = process.env.PORT || 3000;
 const publicPath = path.join(__dirname, '../public');
 // console.log(publicPath);
 // Returns: D:\Documents\nodejs-udemy-andrew\node-chat-app\public
+
 var app = express();
 // 'app.listen()' is same as 'http.createServer()', which is http.createServer(app);
 // Here we are configuring express to be able to work with 'http' in order to use socket.io
@@ -23,17 +25,9 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => {
   console.log('New user connected');
 
-  socket.emit('newMessage', {
-    from: 'Admin',
-    text: 'Welcome to the chat app',
-    createdAt: new Date().getTime()
-  });
+  socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
 
-  socket.broadcast.emit('newMessage', {
-    from: 'Admin',
-    text: 'New user joined',
-    createdAt: new Date().getTime()
-  });
+  socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
 
   // Custom Event Listener
   socket.on('createMessage', (message) => {
@@ -41,11 +35,7 @@ io.on('connection', (socket) => {
     // Custom Event Emitter
     // 'emit' takes 1st arg as name of event being emitted, and 2nd arg is options for that named event.
     // while 'socket.emit' emits an event to a single connection, 'io.emit' emits event to every single connection
-    io.emit('newMessage', {
-      from: message.from,
-      text: message.text,
-      createdAt: new Date().getTime()
-    });
+    io.emit('newMessage', generateMessage(message.from, message.text));
 
     // 'socket.broadcast.emit' will emit the 'newMessage' event to everyone except to this 'socket' (The 'socket' is the one who calls 'emit')
     // socket.broadcast.emit('newMessage', {
