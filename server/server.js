@@ -6,7 +6,8 @@ const http = require('http');
 const express = require('express');
 const socketIO = require('socket.io');
 
-const {generateMessage} = require('./utils/message');
+const {generateMessage, generateLocationMessage} =
+ require('./utils/message');
 const port = process.env.PORT || 3000;
 const publicPath = path.join(__dirname, '../public');
 // console.log(publicPath);
@@ -41,13 +42,10 @@ io.on('connection', (socket) => {
     io.emit('newMessage', generateMessage(message.from, message.text));
     // can add argument to 'callback()' (can be any data type) which can then be used in client's callback, 'data'.
     callback('this is from the server.');
+  });
 
-    // 'socket.broadcast.emit' will emit the 'newMessage' event to everyone except to this 'socket' (The 'socket' is the one who calls 'emit')
-    // socket.broadcast.emit('newMessage', {
-    //   from: message.from,
-    //   text: message.text,
-    //   createdAt: new Date().getTime()
-    // });
+  socket.on('createLocationMessage', (coords) => {
+    io.emit('newLocationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude))
   });
 
   socket.on('disconnect', () => {
