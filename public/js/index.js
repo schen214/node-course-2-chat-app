@@ -38,31 +38,41 @@ jQuery('#message-form').on('submit', function (e) {
   // 'preventDefault()' prevents default behavior of an event (in this case on the 'submit' event)
   e.preventDefault();
 
+  var messageTextbox = jQuery('[name=message]');
+
   // 'emit()' Can take a 3rd argument, callback function, which will fire when the 'event acknowledgement' arrives from server to the client
   socket.emit('createMessage', {
       from: 'User',
-      text: jQuery('[name=message]').val()
+      text: messageTextbox.val()
   }, function () {
-
+    // Using 'event acknowledgement' to clear the message in input element
+    messageTextbox.val('');
   });
 });
 
 // Mozilla Geolocation API
 var locationButton = jQuery('#send-location');
-locationButton.on('click', function (e) {
+locationButton.on('click', function () {
   if (!navigator.geolocation) {
     return alert('Geolocation not supported by your browser');
   }
 
+  // Added attribute to locationButton where disabled="disabled", so users can't spam button while location is being retrieved
+  // Args MUST be in String!
+  locationButton.attr('disabled', 'disabled').text('Sending location...');
+
   // 'getCurrentPosition()': 1st arg is success function, 2nd arg is error handler (When client doesnt allow their location to be tracked)
   navigator.geolocation.getCurrentPosition(function (position) {
     console.log(position);
+    // 'removeAttr()' removes attribute specified in arg
+    locationButton.removeAttr('disabled').text('Send location');
 
     socket.emit('createLocationMessage', {
       latitude: position.coords.latitude,
       longitude: position.coords.longitude
     });
   }, function () {
+    locationButton.removeAttr('disabled').text('Send location');
     alert('Unable to fetch location.');
   });
 });

@@ -32,7 +32,7 @@ io.on('connection', (socket) => {
   socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
 
   // Custom Event Listener
-  // Adding 'callback' as 2nd arg to arrow function will allow us to use 'callback()'. Thus, callback in index.js will fire 'acknowledging' the emitted event
+  // Adding 'callback' as 2nd arg to arrow function will allow us to use 'callback()'. Thus, callback in index.js will fire 'acknowledging' the emitted event being received
   socket.on('createMessage', (message, callback) => {
     console.log('createMessage', message);
 
@@ -41,7 +41,7 @@ io.on('connection', (socket) => {
     // while 'socket.emit' emits an event to a single connection, 'io.emit' emits event to everyone connected
     io.emit('newMessage', generateMessage(message.from, message.text));
     // can add argument to 'callback()' (can be any data type) which can then be used in client's callback, 'data'.
-    callback('this is from the server.');
+    callback();
   });
 
   socket.on('createLocationMessage', (coords) => {
