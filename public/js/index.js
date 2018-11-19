@@ -11,21 +11,23 @@ socket.on('disconnect', function () {
 
 // Custom Event Listener
 socket.on('newMessage', function (message) {
-  console.log('newMessage', message);
+  // console.log('newMessage', message);
+  var formattedTime = moment(message.createdAt).format('h:mm a');
 
   // [ #1 ]
   var li = jQuery('<li></li>');
-  li.text(`${message.from}: ${message.text}`);
+  li.text(`${message.from} ${formattedTime}: ${message.text}`);
 
   // .append() appends specified element at the very bottom
   jQuery('#messages').append(li);
 });
 
 socket.on('newLocationMessage', function (message) {
+  var formattedTime = moment(message.createdAt).format('h:mm a');
   var li = jQuery('<li></li>');
   var a = jQuery('<a target="_blank">My current location</a>');
 
-  li.text(`${message.from}: `);
+  li.text(`${message.from} ${formattedTime}: `);
   // can set attributes to elements using jQuery. If only one argument is specified (ex: a.attr('target') ), then it will retrieve the value of 'target'. If two args specified, then it will set that attribute.
   a.attr('href', message.url);
   li.append(a);
