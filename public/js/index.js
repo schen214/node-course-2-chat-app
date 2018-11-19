@@ -11,27 +11,48 @@ socket.on('disconnect', function () {
 
 // Custom Event Listener
 socket.on('newMessage', function (message) {
-  // console.log('newMessage', message);
   var formattedTime = moment(message.createdAt).format('h:mm a');
+  // Mustache.js:
+  // '.html()' returns the markup inside #message-template, which is the template code (<p>This is a template</p>)
+  var template = jQuery('#message-template').html();
+  // What we will eventually add into the browser.
+  // 'render()' takes as an arg the template we want to show and 2nd arg an object key-value pairs for what you want to render in in ur html (Dynamic rendering of template)... then you would place ex: '{{text}}' in ur html
+  var html = Mustache.render(template, {
+    text: message.text,
+    from: message.from,
+    createdAt: formattedTime
+  });
 
-  // [ #1 ]
-  var li = jQuery('<li></li>');
-  li.text(`${message.from} ${formattedTime}: ${message.text}`);
+  jQuery('#messages').append(html);
 
-  // .append() appends specified element at the very bottom
-  jQuery('#messages').append(li);
+  // console.log('newMessage', message);
+  //
+  // // [ #1 ]
+  // var li = jQuery('<li></li>');
+  // li.text(`${message.from} ${formattedTime}: ${message.text}`);
+  //
+  // // .append() appends specified element at the very bottom
+  // jQuery('#messages').append(li);
 });
 
 socket.on('newLocationMessage', function (message) {
   var formattedTime = moment(message.createdAt).format('h:mm a');
-  var li = jQuery('<li></li>');
-  var a = jQuery('<a target="_blank">My current location</a>');
+  var template = jQuery('#location-message-template').html();
+  var html = Mustache.render(template, {
+    from: message.from,
+    createdAt: formattedTime,
+    url: message.url
+  });
 
-  li.text(`${message.from} ${formattedTime}: `);
-  // can set attributes to elements using jQuery. If only one argument is specified (ex: a.attr('target') ), then it will retrieve the value of 'target'. If two args specified, then it will set that attribute.
-  a.attr('href', message.url);
-  li.append(a);
-  jQuery('#messages').append(li);
+  jQuery('#messages').append(html);
+  // var li = jQuery('<li></li>');
+  // var a = jQuery('<a target="_blank">My current location</a>');
+  //
+  // li.text(`${message.from} ${formattedTime}: `);
+  // // can set attributes to elements using jQuery. If only one argument is specified (ex: a.attr('target') ), then it will retrieve the value of 'target'. If two args specified, then it will set that attribute.
+  // a.attr('href', message.url);
+  // li.append(a);
+  // jQuery('#messages').append(li);
 });
 
 // [ #2 ]
