@@ -1,6 +1,38 @@
 //'io()' initializes the request from the client to the server to open up a web socket and keeps it open
 var socket = io();
 
+//'scrollToBottom()' will scroll user to bottom of page using 'scrollHeight', 'clientHeight', 'scrollTop' properties
+function scrollToBottom() {
+  // Selectors
+  // newMessage wiil grab the last message written
+  var messages = jQuery('#messages');
+  var newMessage = messages.children('li:last-child');
+  // Heights
+  // .'prop()' returns property values of specified properties
+  var clientHeight = messages.prop('clientHeight');
+  var scrollTop = messages.prop('scrollTop');
+  var scrollHeight = messages.prop('scrollHeight');
+  var newMessageHeight = newMessage.innerHeight();
+  // '.prev()' will grab the 2nd to last child of 'li:last-child'
+  var lastMessageHeight = newMessage.prev().innerHeight();
+
+
+
+  if (clientHeight + scrollTop + newMessageHeight + lastMessageHeight >= scrollHeight) {
+    console.log(scrollHeight);
+    console.log(scrollTop);
+    // 'scrollTop()' jQuery that allows you to specify the value(number) for scrolling
+    messages.scrollTop(scrollHeight);
+  } else if (scrollHeight > 700) {
+    $('#scrollToBottom').css('display', 'inline');
+
+    $('#scrollToBottom').click(function () {
+      messages.scrollTop(scrollHeight);
+      $('#scrollToBottom').css('display', 'none');
+    });
+  }
+}
+
 socket.on('connect', function () {
   console.log('Connected to server');
 });
@@ -24,6 +56,7 @@ socket.on('newMessage', function (message) {
   });
 
   jQuery('#messages').append(html);
+  scrollToBottom();
 
   // console.log('newMessage', message);
   //
@@ -35,6 +68,7 @@ socket.on('newMessage', function (message) {
   // jQuery('#messages').append(li);
 });
 
+// Using Mustache.js
 socket.on('newLocationMessage', function (message) {
   var formattedTime = moment(message.createdAt).format('h:mm a');
   var template = jQuery('#location-message-template').html();
@@ -45,6 +79,8 @@ socket.on('newLocationMessage', function (message) {
   });
 
   jQuery('#messages').append(html);
+  scrollToBottom();
+
   // var li = jQuery('<li></li>');
   // var a = jQuery('<a target="_blank">My current location</a>');
   //
