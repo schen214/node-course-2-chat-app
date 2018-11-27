@@ -8,6 +8,8 @@ const socketIO = require('socket.io');
 
 const {generateMessage, generateLocationMessage} =
  require('./utils/message');
+const {isRealString} = require('./utils/validation');
+const {Users} = require('./utils/users');
 const port = process.env.PORT || 3000;
 const publicPath = path.join(__dirname, '../public');
 // console.log(publicPath);
@@ -19,6 +21,7 @@ var app = express();
 var server = http.createServer(app)
 // 'SocketIO()' takes the server that you want to use for our web socket
 var io = socketIO(server);
+var users = new Users();
 
 app.use(express.static(publicPath));
 
@@ -26,10 +29,29 @@ app.use(express.static(publicPath));
 io.on('connection', (socket) => {
   console.log('New user connected');
 
-  socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
+  // SocketIO Rooms
+  socket.on('join', (params, callback) => {
+    if (!isRealString(params.name) || !isRealString(params.room)) {
+      return callback('Name and room name are required!');
+    }
 
-  // Emits to everyone but that 'socket'
-  socket.broadcast.emit('newMessage', generateMessage('Admin', 'New user joined'));
+    // .join() joins a room taking name of the room as string value as the argument
+    // .leave() leaves a room taking name of the room as a string value as arg
+    socket.join(params.room);
+    users.removeUser(socket.id);
+    users.addUser(socket.id, params.name, params.room);
+
+    io.to(params.room).emit('updateUserList', users.getUserList(params.room));
+
+    // Emit to everyone: io.emit -> io.to('The Office Fans').emit()
+    // Emit to everyone but the current socket: socket.broadcast.emit -> socket.broadcast.to('The Office Fans').emit()
+    // Client side emit (No need to direct to room): socket.emit
+
+    socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
+    // Emits to everyone but the'socket' that sent the message
+    socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.name} has joined.`));
+    callback();
+  });
 
   // Custom Event Listener
   // Adding 'callback' as 2nd arg to arrow function will allow us to use 'callback()'. Thus, callback in index.js will fire 'acknowledging' the emitted event being received
@@ -49,6 +71,13 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
+    var user = users.removeUser(socket.id);
+
+    if (user) {
+      io.to(user.room).emit('updateUserList', users.getUserList(user.room));
+      io.to(user.room).emit('newMessage', generateMessage('Admin', `${user.name} has left ${user.room}.`));
+    }
+    
     console.log('User has disconnected');
   });
 });

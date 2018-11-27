@@ -16,8 +16,6 @@ function scrollToBottom() {
   // '.prev()' will grab the 2nd to last child of 'li:last-child'
   var lastMessageHeight = newMessage.prev().innerHeight();
 
-
-
   if (clientHeight + scrollTop + newMessageHeight + lastMessageHeight >= scrollHeight) {
     console.log(scrollHeight);
     console.log(scrollTop);
@@ -34,11 +32,34 @@ function scrollToBottom() {
 }
 
 socket.on('connect', function () {
-  console.log('Connected to server');
+  // console.log('Connected to server');
+  var params = $.deparam(window.location.search);
+
+  socket.emit('join', params, function (err) {
+    if (err) {
+      alert(err);
+      // routes user back to root page
+      window.location.href = '/'
+    } else {
+      console.log("No error");
+    }
+  });
 });
 
 socket.on('disconnect', function () {
   console.log('Disconnected from server');
+});
+
+socket.on('updateUserList', function (users) {
+  // console.log(`Users List: ${users}`);
+  var ol = $('<ol></ol>');
+
+  users.forEach(function (user) {
+    ol.append($('<li></li>').text(user));
+  });
+
+  // Using '.html()' instead of '.appened()' since html will wipe and replace the Peoples list as opposed to adding on to it
+  $('#users').html(ol);
 });
 
 // Custom Event Listener
@@ -137,7 +158,7 @@ locationButton.on('click', function () {
 });
 
 
-// ^^ Pure Javascript: 
+// ^^ Pure Javascript:
 // ----------
 // [ #1 ]
 // var node = document.createElement('LI');
