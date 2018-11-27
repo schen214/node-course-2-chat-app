@@ -45,7 +45,7 @@ io.on('connection', (socket) => {
 
     // Emit to everyone: io.emit -> io.to('The Office Fans').emit()
     // Emit to everyone but the current socket: socket.broadcast.emit -> socket.broadcast.to('The Office Fans').emit()
-    // Client side emit (No need to direct to room): socket.emit
+    // Emits event to single socket(No need to direct to room): socket.emit()
 
     socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
     // Emits to everyone but the'socket' that sent the message
@@ -56,18 +56,23 @@ io.on('connection', (socket) => {
   // Custom Event Listener
   // Adding 'callback' as 2nd arg to arrow function will allow us to use 'callback()'. Thus, callback in index.js will fire 'acknowledging' the emitted event being received
   socket.on('createMessage', (message, callback) => {
-    console.log('createMessage', message);
+    var user = users.getUser(socket.id);
 
-    // Custom Event Emitter
-    // 'emit' takes 1st arg as name of event being emitted, and 2nd arg is options for that named event.
-    // while 'socket.emit' emits an event to a single connection, 'io.emit' emits event to everyone connected
-    io.emit('newMessage', generateMessage(message.from, message.text));
-    // can add argument to 'callback()' (can be any data type) which can then be used in client's callback, 'data'.
+    if (user && isRealString(message.text)) {
+      // 'emit' takes 1st arg as name of (custom) event being emitted, and 2nd arg is object options for that named event
+      io.to(user.room).emit('newMessage', generateMessage(user.name, message.text));
+    }
+
+    // can add argument to 'callback()' (can be any data type) which can then be used in client's callback (can be named 'data')
     callback();
   });
 
   socket.on('createLocationMessage', (coords) => {
-    io.emit('newLocationMessage', generateLocationMessage('Admin', coords.latitude, coords.longitude))
+    var user = users.getUser(socket.id);
+
+    if (user) {
+      io.to(user.room).emit('newLocationMessage', generateLocationMessage(user.name, coords.latitude, coords.longitude))
+    }
   });
 
   socket.on('disconnect', () => {
@@ -77,7 +82,7 @@ io.on('connection', (socket) => {
       io.to(user.room).emit('updateUserList', users.getUserList(user.room));
       io.to(user.room).emit('newMessage', generateMessage('Admin', `${user.name} has left ${user.room}.`));
     }
-    
+
     console.log('User has disconnected');
   });
 });

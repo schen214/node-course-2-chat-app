@@ -21,7 +21,7 @@ function scrollToBottom() {
     console.log(scrollTop);
     // 'scrollTop()' jQuery that allows you to specify the value(number) for scrolling
     messages.scrollTop(scrollHeight);
-  } else if (scrollHeight > 700) {
+  } else if (scrollHeight > 700 && scrollTop !==0) {
     $('#scrollToBottom').css('display', 'inline');
 
     $('#scrollToBottom').click(function () {
@@ -122,7 +122,6 @@ jQuery('#message-form').on('submit', function (e) {
 
   // 'emit()' Can take a 3rd argument, callback function, which will fire when the 'event acknowledgement' arrives from server to the client
   socket.emit('createMessage', {
-      from: 'User',
       text: messageTextbox.val()
   }, function () {
     // Using 'event acknowledgement' to clear the message in input element

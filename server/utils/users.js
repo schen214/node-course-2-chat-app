@@ -27,16 +27,6 @@ class Users {
   }
 }
 
-// var me = new Users();
-// var you = new Users();
-//
-// me.addUser('123','me', 'Node');
-// me.addUser('55','me2', 'Node');
-// you.addUser('4556','you', 'React');
-//
-// console.log(me);
-// console.log(you);
-
 module.exports = {Users};
 
 
